@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meeting Intelligence · AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #07090F;
+    --surface:   #0D1018;
+    --card:      #131720;
+    --border:    rgba(255,255,255,0.07);
+    --border-hi: rgba(255,255,255,0.18);
+    --accent:    #7C6FFF;
+    --accent-2:  #A78BFA;
+    --accent-dim:#7C6FFF22;
+    --success:   #34D399;
+    --warn:      #FBBF24;
+    --danger:    #F87171;
+    --text-1:    #EDF2FF;
+    --text-2:    #8892A4;
+    --text-3:    #525C6E;
+    --radius-sm: 8px;
+    --radius:    12px;
+    --radius-lg: 18px;
+    --font:      'DM Sans', sans-serif;
+    --mono:      'DM Mono', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-1);
+    min-height: 100vh;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page { max-width: 780px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+
+  /* Logo */
+  .logo-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 3rem; }
+  .logo-mark {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent), #C084FC);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 600; color: #fff; letter-spacing: -0.5px; flex-shrink: 0;
+  }
+  .logo-name { font-size: 15px; font-weight: 500; }
+  .logo-tag {
+    font-size: 11px; font-weight: 500; color: var(--accent-2);
+    background: var(--accent-dim); border: 1px solid rgba(124,111,255,0.25);
+    padding: 2px 8px; border-radius: 20px; margin-left: auto;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+
+  /* Hero */
+  .hero { margin-bottom: 2.5rem; }
+  .hero h1 {
+    font-size: 38px; font-weight: 600; letter-spacing: -1.2px;
+    line-height: 1.15; margin-bottom: 12px;
+  }
+  .hero h1 span {
+    background: linear-gradient(90deg, var(--accent), #C084FC);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .hero p { font-size: 16px; color: var(--text-2); max-width: 500px; line-height: 1.65; }
+
+  /* Input tabs */
+  .input-section {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1.75rem; margin-bottom: 1rem;
+  }
+
+  .tab-row { display: flex; gap: 4px; margin-bottom: 1.25rem; }
+  .tab-btn {
+    font-family: var(--font); font-size: 13px; font-weight: 500;
+    color: var(--text-3); background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 7px 14px; cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tab-btn svg { flex-shrink: 0; }
+  .tab-btn:hover { color: var(--text-2); border-color: var(--border-hi); }
+  .tab-btn.active {
+    color: var(--accent-2); background: var(--accent-dim);
+    border-color: rgba(124,111,255,0.3);
+  }
+
+  /* Paste panel */
+  .panel { display: none; }
+  .panel.show { display: block; }
+
+  .field-label {
+    font-size: 12px; font-weight: 500; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--text-3);
+    margin-bottom: 10px; display: flex; align-items: center; gap: 10px;
+  }
+  .sample-btn {
+    font-size: 12px; font-weight: 400; color: var(--accent-2);
+    background: none; border: none; cursor: pointer;
+    text-transform: none; letter-spacing: 0; padding: 0;
+    opacity: 0.8; transition: opacity 0.15s; font-family: var(--font);
+  }
+  .sample-btn:hover { opacity: 1; }
+
+  textarea {
+    width: 100%; min-height: 180px; resize: vertical;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); color: var(--text-1);
+    font-family: var(--font); font-size: 14px; line-height: 1.65;
+    padding: 14px 16px; transition: border-color 0.2s; outline: none;
+  }
+  textarea:focus { border-color: rgba(124,111,255,0.5); }
+  textarea::placeholder { color: var(--text-3); }
+
+  /* Drop zone */
+  .drop-zone {
+    border: 2px dashed var(--border-hi); border-radius: var(--radius-lg);
+    padding: 2.5rem 1.5rem; text-align: center; cursor: pointer;
+    transition: all 0.2s; position: relative; background: var(--surface);
+  }
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--accent); background: var(--accent-dim);
+  }
+  .drop-zone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .drop-icon {
+    width: 48px; height: 48px; border-radius: 14px;
+    background: var(--accent-dim); border: 1px solid rgba(124,111,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px; color: var(--accent-2);
+  }
+  .drop-title { font-size: 15px; font-weight: 500; color: var(--text-1); margin-bottom: 6px; }
+  .drop-sub { font-size: 13px; color: var(--text-3); }
+  .drop-sub span { color: var(--accent-2); }
+  .file-types {
+    display: flex; gap: 6px; justify-content: center; margin-top: 14px; flex-wrap: wrap;
+  }
+  .ftype {
+    font-size: 11px; font-weight: 500; padding: 3px 10px;
+    border-radius: 20px; border: 1px solid var(--border);
+    color: var(--text-3); background: var(--card); letter-spacing: 0.04em;
+  }
+
+  /* File loaded state */
+  .file-loaded {
+    display: none; background: var(--surface); border: 1px solid rgba(52,211,153,0.25);
+    border-radius: var(--radius-lg); padding: 1rem 1.25rem;
+    align-items: center; gap: 12px;
+  }
+  .file-loaded.show { display: flex; }
+  .file-icon-wrap {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.2);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--success); flex-shrink: 0;
+  }
+  .file-info { flex: 1; min-width: 0; }
+  .file-name { font-size: 14px; font-weight: 500; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-meta { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+  .file-remove {
+    background: none; border: none; color: var(--text-3); cursor: pointer;
+    padding: 4px; border-radius: 6px; transition: color 0.15s; font-family: var(--font);
+    display: flex; align-items: center;
+  }
+  .file-remove:hover { color: var(--danger); }
+
+  /* Processing indicator */
+  .file-processing {
+    display: none; align-items: center; gap: 10px; padding: 1rem;
+    background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border);
+    font-size: 14px; color: var(--text-2);
+  }
+  .file-processing.show { display: flex; }
+
+  /* Meta */
+  .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+  .field-mini label { font-size: 12px; color: var(--text-3); display: block; margin-bottom: 6px; font-weight: 500; }
+  input[type="text"], select {
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text-1); font-family: var(--font);
+    font-size: 14px; padding: 9px 12px; outline: none; transition: border-color 0.2s;
+    -webkit-appearance: none; appearance: none; height: 40px;
+  }
+  input[type="text"]:focus, select:focus { border-color: rgba(124,111,255,0.5); }
+  input[type="text"]::placeholder { color: var(--text-3); }
+
+  .row-lang { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+  .row-lang label { font-size: 12px; color: var(--text-3); white-space: nowrap; }
+  .row-lang select { max-width: 160px; }
+
+  /* Run button */
+  .btn-run {
+    width: 100%; margin-top: 1.25rem; padding: 14px 20px;
+    font-family: var(--font); font-size: 15px; font-weight: 500; color: #fff;
+    background: linear-gradient(135deg, var(--accent), #9F7AEA);
+    border: none; border-radius: var(--radius); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: opacity 0.2s, transform 0.15s; letter-spacing: -0.2px;
+    position: relative; overflow: hidden;
+  }
+  .btn-run::before { content:''; position:absolute; inset:0; background:rgba(255,255,255,0); transition:background 0.2s; }
+  .btn-run:hover::before { background:rgba(255,255,255,0.07); }
+  .btn-run:active { transform: scale(0.99); }
+  .btn-run:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .spinner {
+    width: 17px; height: 17px; border: 2px solid rgba(255,255,255,0.25);
+    border-top-color: #fff; border-radius: 50%; animation: spin 0.65s linear infinite; flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-box {
+    background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2);
+    border-radius: var(--radius); padding: 12px 16px; font-size: 14px;
+    color: var(--danger); margin-top: 1rem; display: none;
+  }
+
+  /* Results */
+  .results { margin-top: 2rem; display: none; flex-direction: column; gap: 1rem; }
+  .results.show { display: flex; }
+  .r-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1.25rem 1.5rem;
+    animation: fadeUp 0.4s ease both;
+  }
+  .r-card:nth-child(1) { animation-delay: 0.0s; }
+  .r-card:nth-child(2) { animation-delay: 0.05s; }
+  .r-card:nth-child(3) { animation-delay: 0.1s; }
+  .r-card:nth-child(4) { animation-delay: 0.15s; }
+  .r-card:nth-child(5) { animation-delay: 0.2s; }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(12px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-3);
+    margin-bottom: 14px; display: flex; align-items: center; gap: 7px;
+  }
+  .eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .big-text { font-size: 15px; color: var(--text-1); line-height: 1.75; font-weight: 300; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .item-list { display: flex; flex-direction: column; gap: 8px; }
+  .item {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 12px;
+    font-size: 14px; color: var(--text-1); line-height: 1.55;
+    transition: border-color 0.2s;
+  }
+  .item:hover { border-color: var(--border-hi); }
+  .item-pip { width: 5px; border-radius: 3px; flex-shrink: 0; align-self: stretch; min-height: 18px; }
+  .pip-action   { background: var(--accent); }
+  .pip-decision { background: var(--success); }
+  .pip-risk     { background: var(--danger); }
+  .pip-question { background: var(--warn); }
+  .owner-chip {
+    display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500;
+    background: var(--accent-dim); color: var(--accent-2);
+    border: 1px solid rgba(124,111,255,0.2); border-radius: 20px;
+    padding: 1px 8px; margin-left: 6px; vertical-align: middle; white-space: nowrap;
+  }
+  .date-chip {
+    display: inline-flex; align-items: center; gap: 4px; font-size: 11px;
+    background: rgba(255,255,255,0.05); color: var(--text-3);
+    border: 1px solid var(--border); border-radius: 20px;
+    padding: 1px 8px; margin-left: 4px; vertical-align: middle;
+    white-space: nowrap; font-family: var(--mono);
+  }
+  .tag-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
+  .tag {
+    font-size: 12px; padding: 4px 12px; border-radius: 20px;
+    background: var(--surface); border: 1px solid var(--border); color: var(--text-2);
+    transition: border-color 0.2s, color 0.2s; cursor: default;
+  }
+  .tag:hover { border-color: var(--accent); color: var(--accent-2); }
+  .empty-note { font-size: 13px; color: var(--text-3); font-style: italic; }
+
+
+  /* Download bar */
+  .download-bar {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    animation: fadeUp 0.4s ease both;
+    animation-delay: 0.25s;
+  }
+  .download-info {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text-3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 180px;
+  }
+  .download-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-dl {
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: all 0.15s;
+    border: 1px solid;
+  }
+  .btn-dl-docx {
+    background: var(--accent-dim);
+    color: var(--accent-2);
+    border-color: rgba(124,111,255,0.3);
+  }
+  .btn-dl-docx:hover { background: rgba(124,111,255,0.2); }
+  .btn-dl-html {
+    background: rgba(52,211,153,0.08);
+    color: var(--success);
+    border-color: rgba(52,211,153,0.25);
+  }
+  .btn-dl-html:hover { background: rgba(52,211,153,0.15); }
+
+  @media (max-width: 540px) {
+    .grid2 { grid-template-columns: 1fr; }
+    .meta-grid { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 28px; }
+    .tab-btn span { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="logo-bar">
+    <div class="logo-mark">MI</div>
+    <span class="logo-name">Meeting Intelligence</span>
+    <span class="logo-tag">AI powered</span>
+  </div>
+
+  <div class="hero">
+    <h1>Értekezés → <span>tiszta kép</span><br>másodpercek alatt.</h1>
+    <p>Töltsd fel a dokumentumot vagy másold be a szöveget. Az AI kinyeri a döntéseket, teendőket, kockázatokat és nyitott kérdéseket.</p>
+  </div>
+
+  <div class="input-section">
+
+    <!-- Tabs -->
+    <div class="tab-row">
+      <button class="tab-btn active" id="tabUpload" onclick="switchTab('upload')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span>Fájl feltöltése</span>
+      </button>
+      <button class="tab-btn" id="tabPaste" onclick="switchTab('paste')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span>Szöveg beillesztése</span>
+      </button>
+    </div>
+
+    <!-- Upload panel -->
+    <div class="panel show" id="panelUpload">
+      <div class="drop-zone" id="dropZone"
+           ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+        <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.doc"
+               onchange="handleFileSelect(this.files[0])">
+        <div class="drop-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div class="drop-title">Húzd ide a fájlt, vagy kattints a tallózáshoz</div>
+        <div class="drop-sub">Bármilyen megbeszélés-átirat vagy feljegyzés — <span>ingyenesen elemezve</span></div>
+        <div class="file-types">
+          <span class="ftype">PDF</span>
+          <span class="ftype">DOCX</span>
+          <span class="ftype">TXT</span>
+        </div>
+      </div>
+
+      <div class="file-processing" id="fileProcessing">
+        <div class="spinner" style="border-top-color:var(--accent-2);border-color:rgba(167,139,250,0.2)"></div>
+        <span>Dokumentum olvasása folyamatban…</span>
+      </div>
+
+      <div class="file-loaded" id="fileLoaded">
+        <div class="file-icon-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 15 12 18 15 15"/><line x1="12" y1="18" x2="12" y2="11"/></svg>
+        </div>
+        <div class="file-info">
+          <div class="file-name" id="fileNameDisplay"></div>
+          <div class="file-meta" id="fileMetaDisplay"></div>
+        </div>
+        <button class="file-remove" onclick="removeFile()" title="Eltávolítás">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Paste panel -->
+    <div class="panel" id="panelPaste">
+      <div class="field-label">
+        Megbeszélés szövege
+        <button class="sample-btn" onclick="fillSample()">↓ minta betöltése</button>
+      </div>
+      <textarea id="transcript" placeholder="Másold be a megbeszélés szövegét, feljegyzéseit vagy hanganyag átiratát ide…"></textarea>
+    </div>
+
+    <!-- Meta -->
+    <div class="meta-grid">
+      <div class="field-mini">
+        <label>Megbeszélés témája <em style="opacity:.5;font-style:normal">(opcionális)</em></label>
+        <input type="text" id="topic" placeholder="pl. Q4 sprint tervezés">
+      </div>
+      <div class="field-mini">
+        <label>Résztvevők <em style="opacity:.5;font-style:normal">(opcionális)</em></label>
+        <input type="text" id="attendees" placeholder="pl. Kovács B., Nagy A.">
+      </div>
+    </div>
+
+    <div class="row-lang">
+      <label>Kimenet:</label>
+      <select id="lang">
+        <option value="hungarian">Magyar</option>
+        <option value="english">English</option>
+      </select>
+    </div>
+
+    <button class="btn-run" id="runBtn" onclick="analyze()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      Elemzés indítása
+    </button>
+  </div>
+
+  <div class="error-box" id="errBox"></div>
+
+  <!-- Results -->
+  <div class="results" id="results">
+    <div class="r-card">
+      <div class="eyebrow"><span class="eyebrow-dot" style="background:var(--accent)"></span>Összefoglaló</div>
+      <p class="big-text" id="summaryText"></p>
+    </div>
+    <div class="grid2">
+      <div class="r-card">
+        <div class="eyebrow"><span class="eyebrow-dot" style="background:var(--success)"></span>Döntések</div>
+        <div class="item-list" id="decisionsList"></div>
+      </div>
+      <div class="r-card">
+        <div class="eyebrow"><span class="eyebrow-dot" style="background:var(--danger)"></span>Kockázatok</div>
+        <div class="item-list" id="risksList"></div>
+      </div>
+    </div>
+    <div class="r-card">
+      <div class="eyebrow"><span class="eyebrow-dot" style="background:var(--accent)"></span>Teendők · Action Items</div>
+      <div class="item-list" id="actionsList"></div>
+    </div>
+    <div class="r-card">
+      <div class="eyebrow"><span class="eyebrow-dot" style="background:#C084FC"></span>Fontos megállapítások</div>
+      <div class="item-list" id="insightsList"></div>
+    </div>
+    <div class="grid2">
+      <div class="r-card">
+        <div class="eyebrow"><span class="eyebrow-dot" style="background:var(--warn)"></span>Nyitott kérdések</div>
+        <div class="item-list" id="questionsList"></div>
+      </div>
+      <div class="r-card">
+        <div class="eyebrow"><span class="eyebrow-dot" style="background:var(--text-3)"></span>Kulcsszavak</div>
+        <div class="tag-wrap" id="tagsList"></div>
+      </div>
+    </div>
+
+    <!-- Download bar -->
+    <div class="download-bar">
+      <div class="download-info">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Az összefoglaló letölthető szerkeszthető Word dokumentumként
+      </div>
+      <div class="download-btns">
+        <button class="btn-dl btn-dl-docx" onclick="downloadDOCX()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Letöltés DOCX-ként
+        </button>
+        <button class="btn-dl btn-dl-html" onclick="downloadHTML()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Nyomtatható nézet (PDF)
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+
+<script>
+// ── State ──
+let activeTab = 'upload';
+let extractedText = '';
+let loadedFileName = '';
+
+// ── Tabs ──
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('tabUpload').classList.toggle('active', tab === 'upload');
+  document.getElementById('tabPaste').classList.toggle('active', tab === 'paste');
+  document.getElementById('panelUpload').classList.toggle('show', tab === 'upload');
+  document.getElementById('panelPaste').classList.toggle('show', tab === 'paste');
+}
+
+// ── Drag & Drop ──
+function onDragOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('drag-over'); }
+function onDragLeave(e) { document.getElementById('dropZone').classList.remove('drag-over'); }
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFileSelect(file);
+}
+
+// ── File handling ──
+function handleFileSelect(file) {
+  if (!file) return;
+  const allowed = ['text/plain','application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/msword'];
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (!['txt','pdf','docx','doc'].includes(ext)) {
+    showError('Csak PDF, DOCX és TXT fájlok támogatottak.');
+    return;
+  }
+  showProcessing(true);
+  hideFileLoaded();
+
+  if (ext === 'txt') {
+    const reader = new FileReader();
+    reader.onload = e => { setExtracted(e.target.result, file); };
+    reader.onerror = () => showError('Nem sikerült olvasni a fájlt.');
+    reader.readAsText(file, 'UTF-8');
+  } else if (ext === 'pdf') {
+    extractPDF(file);
+  } else {
+    extractDOCX(file);
+  }
+}
+
+async function extractPDF(file) {
+  try {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const ab = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+    let text = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map(s => s.str).join(' ') + '\n';
+    }
+    setExtracted(text.trim(), file);
+  } catch(e) {
+    showProcessing(false);
+    showError('PDF olvasási hiba: ' + e.message);
+  }
+}
+
+async function extractDOCX(file) {
+  try {
+    const ab = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer: ab });
+    setExtracted(result.value.trim(), file);
+  } catch(e) {
+    showProcessing(false);
+    showError('DOCX olvasási hiba: ' + e.message);
+  }
+}
+
+function setExtracted(text, file) {
+  extractedText = text;
+  loadedFileName = file.name;
+  const kb = Math.round(file.size / 1024);
+  const words = text.split(/\s+/).filter(Boolean).length;
+  showProcessing(false);
+  showFileLoaded(file.name, `${words.toLocaleString()} szó · ${kb} KB`);
+  document.getElementById('errBox').style.display = 'none';
+  autoDetect(text);
+}
+
+function showProcessing(on) {
+  document.getElementById('fileProcessing').classList.toggle('show', on);
+  document.getElementById('dropZone').style.display = on ? 'none' : '';
+}
+function showFileLoaded(name, meta) {
+  document.getElementById('fileNameDisplay').textContent = name;
+  document.getElementById('fileMetaDisplay').textContent = meta;
+  document.getElementById('fileLoaded').classList.add('show');
+  document.getElementById('dropZone').style.display = 'none';
+}
+function hideFileLoaded() {
+  document.getElementById('fileLoaded').classList.remove('show');
+}
+function removeFile() {
+  extractedText = '';
+  loadedFileName = '';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('fileLoaded').classList.remove('show');
+  document.getElementById('dropZone').style.display = '';
+}
+
+// ── Sample ──
+function fillSample() {
+  document.getElementById('transcript').value = `Résztvevők: Kovács Béla (PM), Nagy Anna (fejlesztés), Tóth Csaba (design), Fekete Rita (marketing)
+Dátum: 2024. november 12.
+
+Kovács Béla: Üdvözlöm mindenkit. Ma a Q4-es termékfejlesztési irányvonalat szeretném átbeszélni. Anna, hol tartunk a mobilapp backend migrációjával?
+
+Nagy Anna: A migráció 70%-on áll. Sajnos a fizetési modul integrációja bonyolultabbnak bizonyult a vártnál. Legalább 3 hét kell még, de ha erőforrást kapok, be tudom hozni 2 hétre.
+
+Kovács Béla: Mennyi erőforrásra lenne szükség?
+
+Nagy Anna: Egy junior fejlesztő segítené a dolgot. Jancsi például rendelkezésre állna?
+
+Kovács Béla: Rendben, ezt megszervezzük. Csaba, a design fronton mi a helyzet?
+
+Tóth Csaba: Az új onboarding flow prototípusa kész, a user testinget jövő hétre tervezem. Egy dolog van: a jelenlegi logó nem skálázódik jól mobilon, javaslom véglegesítsük a responsive verziót.
+
+Kovács Béla: Beleegyezem. Rita, a marketing kampányhoz szükséges anyagok mikor lesznek készen?
+
+Fekete Rita: November 25-ig minden anyag kész. Viszont ha a migráció csúszik, a launch dátumot is el kell tolnunk. Az influencer kampányt december 1-re terveztük.
+
+Kovács Béla: Ha Anna 2 hét alatt végez, még belefér. Döntsünk: a launch marad december 1-jén, de ha november 28-ig nincs kész a backend, eltoljuk december 15-re. Mindenki egyet ért? Igen. Jó. Anna megkapja Jancsit segítségnek. Csaba befejezi a user testinget. Rita elkészíti a kampányanyagokat 25-re. Legközelebb november 20-án találkozunk.`;
+  document.getElementById('topic').value = 'Q4 termékfejlesztési megbeszélés';
+  document.getElementById('attendees').value = 'Kovács B., Nagy A., Tóth Cs., Fekete R.';
+}
+
+// ── Analyze ──
+async function analyze() {
+  let textToAnalyze = '';
+  if (activeTab === 'upload') {
+    textToAnalyze = extractedText;
+    if (!textToAnalyze || textToAnalyze.length < 30) {
+      showError('Kérlek tölts fel egy dokumentumot (PDF, DOCX vagy TXT).'); return;
+    }
+  } else {
+    textToAnalyze = document.getElementById('transcript').value.trim();
+    if (!textToAnalyze || textToAnalyze.length < 30) {
+      showError('Kérlek illeszd be a megbeszélés szövegét.'); return;
+    }
+  }
+
+  const topic = document.getElementById('topic').value.trim();
+  const attendees = document.getElementById('attendees').value.trim();
+  const lang = document.getElementById('lang').value;
+  const btn = document.getElementById('runBtn');
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Elemzés folyamatban…';
+  document.getElementById('errBox').style.display = 'none';
+  document.getElementById('results').classList.remove('show');
+
+  const langInstr = lang === 'hungarian'
+    ? 'Respond entirely in Hungarian language.'
+    : 'Respond entirely in English language.';
+
+  const systemPrompt = `You are an expert meeting analyst. Extract structured insights from meeting transcripts.
+${langInstr}
+Return ONLY valid JSON, no markdown fences, no extra text. Use this exact schema:
+{
+  "summary": "2-4 sentence executive summary of the meeting",
+  "decisions": ["decision 1", "decision 2"],
+  "actions": [{"task":"task text","owner":"name or empty string","deadline":"date or empty string"}],
+  "risks": ["risk 1", "risk 2"],
+  "open_questions": ["question 1"],
+  "keywords": ["keyword1","keyword2","keyword3","keyword4","keyword5"],
+  "insights": ["key insight 1", "key insight 2", "key insight 3"]
+}`;
+
+  const userMsg = `Meeting transcript:
+${topic ? 'Topic: ' + topic + '\n' : ''}${attendees ? 'Attendees: ' + attendees + '\n' : ''}
+${textToAnalyze.slice(0, 12000)}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userMsg }]
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error?.message || 'API hiba ' + res.status);
+    const raw = data.content.map(b => b.text || '').join('');
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    renderResults(parsed);
+  } catch(e) {
+    showError('Hiba az elemzés során: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> Elemzés indítása`;
+  }
+}
+
+// ── Render ──
+function makeItem(text, type, owner, deadline) {
+  const pipClass = {action:'pip-action',decision:'pip-decision',risk:'pip-risk',question:'pip-question'}[type]||'pip-action';
+  let chips = '';
+  if (owner) chips += `<span class="owner-chip">${owner}</span>`;
+  if (deadline) chips += `<span class="date-chip">${deadline}</span>`;
+  return `<div class="item"><div class="item-pip ${pipClass}"></div><div>${text}${chips}</div></div>`;
+}
+
+function renderResults(d) {
+  lastResult = d;
+  document.getElementById('summaryText').textContent = d.summary || '–';
+  const dec = document.getElementById('decisionsList');
+  dec.innerHTML = (d.decisions||[]).length
+    ? d.decisions.map(t=>makeItem(t,'decision','','')).join('')
+    : '<p class="empty-note">Nem azonosítható döntés.</p>';
+  const risk = document.getElementById('risksList');
+  risk.innerHTML = (d.risks||[]).length
+    ? d.risks.map(t=>makeItem(t,'risk','','')).join('')
+    : '<p class="empty-note">Nem azonosítható kockázat.</p>';
+  const act = document.getElementById('actionsList');
+  act.innerHTML = (d.actions||[]).length
+    ? d.actions.map(a=>makeItem(a.task,'action',a.owner,a.deadline)).join('')
+    : '<p class="empty-note">Nem azonosítható teendő.</p>';
+  const q = document.getElementById('questionsList');
+  q.innerHTML = (d.open_questions||[]).length
+    ? d.open_questions.map(t=>makeItem(t,'question','','')).join('')
+    : '<p class="empty-note">Nincs nyitott kérdés.</p>';
+  const ins = document.getElementById('insightsList');
+  ins.innerHTML = (d.insights||[]).length
+    ? d.insights.map(t=>`<div class="item"><div class="item-pip" style="background:#C084FC"></div><div>${t}</div></div>`).join('')
+    : '<p class="empty-note">Nem azonosítható megállapítás.</p>';
+  const tags = document.getElementById('tagsList');
+  tags.innerHTML = (d.keywords||[]).map(k=>`<span class="tag">${k}</span>`).join('');
+  document.getElementById('results').classList.add('show');
+  document.getElementById('results').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+
+// ── Download ──
+let lastResult = null;
+
+function downloadHTML() {
+  if (!lastResult) return;
+  const d = lastResult;
+  const topic = document.getElementById('topic').value.trim() || 'Meeting összefoglaló';
+  const date = new Date().toLocaleDateString('hu-HU');
+
+  const section = (title, color, items) => items.length
+    ? `<div class="s"><div class="sh" style="border-left:4px solid ${color}">${title}</div>${items.map(i=>
+        typeof i === 'string'
+          ? `<div class="si">${i}</div>`
+          : `<div class="si"><strong>${i.task}</strong>${i.owner?' &mdash; <em>'+i.owner+'</em>':''}${i.deadline?' &mdash; '+i.deadline:''}</div>`
+      ).join('')}</div>`
+    : '';
+
+  const html = `<!DOCTYPE html><html lang="hu"><head><meta charset="UTF-8">
+<title>${topic}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;color:#1a1a2e;background:#fff;padding:0;line-height:1.6}
+  .page{max-width:720px;margin:0 auto;padding:48px 40px}
+  .hdr{border-bottom:2px solid #7C6FFF;padding-bottom:20px;margin-bottom:32px}
+  .brand{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#7C6FFF;margin-bottom:8px}
+  h1{font-size:26px;font-weight:600;letter-spacing:-0.5px;color:#0f0f1a;margin-bottom:6px}
+  .meta{font-size:13px;color:#888}
+  .s{margin-bottom:28px}
+  .sh{font-size:12px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#555;padding:6px 12px;background:#f7f7fb;margin-bottom:10px}
+  .si{font-size:14px;padding:9px 14px;border-bottom:1px solid #f0f0f5;color:#222}
+  .si:last-child{border-bottom:none}
+  .summary{font-size:15px;font-weight:300;color:#333;line-height:1.8;padding:16px;background:#faf9ff;border-left:4px solid #7C6FFF;margin-bottom:28px}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;padding:10px 0}
+  .tag{font-size:12px;padding:3px 12px;border-radius:20px;border:1px solid #ddd;color:#666}
+  @media print{body{padding:0}.page{padding:20px}}
+</style></head><body>
+<div class="page">
+  <div class="hdr">
+    <div class="brand">Meeting Intelligence · AI</div>
+    <h1>${topic}</h1>
+    <div class="meta">Generálva: ${date}</div>
+  </div>
+  <div class="summary">${d.summary||''}</div>
+  ${section('Döntések','#34D399', d.decisions||[])}
+  ${section('Teendők – Action Items','#7C6FFF', d.actions||[])}
+  ${section('Fontos megállapítások','#C084FC', d.insights||[])}
+  ${section('Kockázatok','#F87171', d.risks||[])}
+  ${section('Nyitott kérdések','#FBBF24', d.open_questions||[])}
+  <div class="s"><div class="sh" style="border-left:4px solid #888">Kulcsszavak</div>
+    <div class="tags">${(d.keywords||[]).map(k=>'<span class="tag">'+k+'</span>').join('')}</div>
+  </div>
+</div>
+</body></html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(() => w.print(), 600);
+}
+
+async function downloadDOCX() {
+  if (!lastResult) return;
+  const d = lastResult;
+  const topic = document.getElementById('topic').value.trim() || 'Meeting összefoglaló';
+  const date = new Date().toLocaleDateString('hu-HU');
+  const btn = document.querySelector('.btn-dl-docx');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-color:rgba(167,139,250,0.3);border-top-color:var(--accent-2)"></div> Generálás…';
+
+  try {
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } = docx;
+
+    const heading = (text, color) => new Paragraph({
+      children: [new TextRun({ text, bold: true, size: 22, color: color||'7C6FFF', font: 'Calibri' })],
+      spacing: { before: 320, after: 120 },
+      border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: color||'7C6FFF', space: 4 } }
+    });
+
+    const bullet = (text) => new Paragraph({
+      children: [new TextRun({ text: '• ' + text, size: 20, font: 'Calibri', color: '1a1a2e' })],
+      spacing: { before: 60, after: 60 },
+      indent: { left: 360 }
+    });
+
+    const normal = (text) => new Paragraph({
+      children: [new TextRun({ text, size: 20, font: 'Calibri', color: '333333' })],
+      spacing: { before: 60, after: 60 }
+    });
+
+    const spacer = () => new Paragraph({ children: [new TextRun('')], spacing: { before: 80, after: 80 } });
+
+    const children = [
+      new Paragraph({
+        children: [new TextRun({ text: 'MEETING INTELLIGENCE · AI', size: 18, color: '7C6FFF', bold: true, font: 'Calibri' })],
+        spacing: { after: 80 }
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: topic, size: 36, bold: true, color: '0f0f1a', font: 'Calibri' })],
+        spacing: { after: 100 }
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: 'Generálva: ' + date, size: 18, color: '888888', font: 'Calibri' })],
+        spacing: { after: 400 }
+      }),
+
+      heading('Összefoglaló', '5B4FE8'),
+      new Paragraph({
+        children: [new TextRun({ text: d.summary||'–', size: 21, font: 'Calibri', color: '333333', italics: true })],
+        spacing: { before: 120, after: 200 }
+      }),
+
+      heading('Döntések', '34A87A'),
+      ...(d.decisions||[]).length ? d.decisions.map(t => bullet(t)) : [normal('–')],
+      spacer(),
+
+      heading('Teendők – Action Items', '6B5CE7'),
+      ...(d.actions||[]).length ? d.actions.map(a => {
+        const extra = [a.owner && 'Felelős: '+a.owner, a.deadline && 'Határidő: '+a.deadline].filter(Boolean).join(' | ');
+        return new Paragraph({
+          children: [
+            new TextRun({ text: '• ' + a.task, size: 20, font: 'Calibri', bold: true, color: '1a1a2e' }),
+            ...(extra ? [new TextRun({ text: '  (' + extra + ')', size: 18, font: 'Calibri', color: '7C6FFF' })] : [])
+          ],
+          spacing: { before: 80, after: 80 },
+          indent: { left: 360 }
+        });
+      }) : [normal('–')],
+      spacer(),
+
+      heading('Fontos megállapítások', 'A855F7'),
+      ...(d.insights||[]).length ? d.insights.map(t => bullet(t)) : [normal('–')],
+      spacer(),
+
+      heading('Kockázatok', 'E05555'),
+      ...(d.risks||[]).length ? d.risks.map(t => bullet(t)) : [normal('–')],
+      spacer(),
+
+      heading('Nyitott kérdések', 'D97706'),
+      ...(d.open_questions||[]).length ? d.open_questions.map(t => bullet(t)) : [normal('–')],
+      spacer(),
+
+      heading('Kulcsszavak', '666688'),
+      new Paragraph({
+        children: [new TextRun({ text: (d.keywords||[]).join('  ·  '), size: 19, font: 'Calibri', color: '666688' })],
+        spacing: { before: 100 }
+      }),
+    ];
+
+    const doc = new Document({
+      sections: [{ properties: { page: { margin: { top: 900, bottom: 900, left: 1000, right: 1000 } } }, children }]
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (topic.replace(/[^a-zA-Z0-9áéíóöőúüűÁÉÍÓÖŐÚÜŰ\s]/g,'').trim() || 'meeting') + '_osszefoglalo.docx';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    alert('DOCX hiba: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Letöltés DOCX-ként`;
+  }
+}
+
+
+// ── Auto-detect names & topic ──
+function autoDetect(text) {
+  if (!text || text.length < 20) return;
+
+  // Detect names: lines matching "Firstname Lastname:" or "Lastname Firstname:"
+  const namePattern = /^([A-ZÁÉÍÓÖŐÚÜŰ][a-záéíóöőúüű]+([ -][A-ZÁÉÍÓÖŐÚÜŰ][a-záéíóöőúüű]+){1,3})\s*:/gm;
+  const found = new Set();
+  let m;
+  while ((m = namePattern.exec(text)) !== null) {
+    const name = m[1].trim();
+    // Skip common false positives
+    if (!['Résztvevők','Dátum','Téma','Tárgy','Helyszín','Megjegyzés','Összefoglaló'].includes(name)) {
+      found.add(name);
+    }
+  }
+
+  // Fill attendees field if found names and field is empty
+  const attendeesEl = document.getElementById('attendees');
+  if (found.size > 0 && !attendeesEl.value.trim()) {
+    const names = [...found];
+    // Shorten to Lastname F. style if more than 3 names
+    const formatted = names.map(n => {
+      const parts = n.split(' ');
+      return parts.length >= 2 ? parts[0] + ' ' + parts[1][0] + '.' : n;
+    });
+    attendeesEl.value = formatted.join(', ');
+    flashField(attendeesEl);
+  }
+
+  // Detect topic: look for explicit Téma/Tárgy line, or first heading-like line
+  const topicEl = document.getElementById('topic');
+  if (!topicEl.value.trim()) {
+    const topicPatterns = [
+      /(?:téma|tárgy|topic|subject|megbeszélés tárgya)\s*[:\-–]\s*(.+)/im,
+      /^#\s+(.+)/m,
+      /^Tárgy:\s*(.+)/im
+    ];
+    for (const pat of topicPatterns) {
+      const tm = text.match(pat);
+      if (tm && tm[1] && tm[1].trim().length > 3) {
+        topicEl.value = tm[1].trim().slice(0, 80);
+        flashField(topicEl);
+        break;
+      }
+    }
+    // Fallback: if first non-empty line looks like a title (short, no colon)
+    if (!topicEl.value.trim()) {
+      const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+      const firstLine = lines[0] || '';
+      if (firstLine.length > 5 && firstLine.length < 80 && !firstLine.includes(':') && !/^[0-9]/.test(firstLine)) {
+        topicEl.value = firstLine;
+        flashField(topicEl);
+      }
+    }
+  }
+}
+
+function flashField(el) {
+  el.style.transition = 'border-color 0.3s, background 0.3s';
+  el.style.borderColor = 'rgba(124,111,255,0.7)';
+  el.style.background = 'rgba(124,111,255,0.07)';
+  setTimeout(() => {
+    el.style.borderColor = '';
+    el.style.background = '';
+  }, 1200);
+}
+
+function showError(msg) {
+  const e = document.getElementById('errBox');
+  e.textContent = msg; e.style.display = 'block';
+}
+
+// Auto-detect on paste/input in textarea
+let detectTimer = null;
+document.addEventListener('DOMContentLoaded', () => {
+  const ta = document.getElementById('transcript');
+  if (ta) {
+    ta.addEventListener('input', () => {
+      clearTimeout(detectTimer);
+      detectTimer = setTimeout(() => autoDetect(ta.value), 600);
+    });
+    ta.addEventListener('paste', () => {
+      setTimeout(() => autoDetect(ta.value), 100);
+    });
+  }
+});
+</script>
+</body>
+</html>
